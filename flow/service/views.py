@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django import http
 from . import models
 
 
@@ -16,3 +17,9 @@ def add_status(request, project, status):
             from_status = old_status,
             to_status = st,
         )
+
+    return http.JsonResponse(
+        dict(
+            result='ok',
+        )
+    )
