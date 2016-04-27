@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django import http
 from . import models
-from graphviz import Graph
+from graphviz import Digraph
 
 
 def add_status(request, project, status):
@@ -28,12 +28,13 @@ def add_status_get(request, project, status):
             )
         )
     if getformat == 'svg':
-        response = http.HttpResponse(content_type='image/svg+xml')
-        dot = Graph(comment='Status %s in project %s' % (status, project), format='svg')
-        if project.current_status.name == status.name:
-            dot.attr('node', style='filled', color='yellow')
-        dot.node('A', str(project))
-        response.write(dot.pipe())
+        render = RenderSvg(project, 'Status %s in project %s' % (status, project))
+        response = http.HttpResponse(content_type=render.mime)
+        render.add_status(status)
+        for st in status.transition_origin.all():
+            render.add_status(st.to_status)
+            render.add_transition(status, st.to_status)
+        response.write(render.render())
         return response
 
     return http.JsonResponse(
@@ -42,6 +43,26 @@ def add_status_get(request, project, status):
         )
     )
 
+class RenderSvg(object):
+    def __init__(self, project, comment):
+        self.project = project
+        self.dot = Digraph(comment=comment, format='svg')
+
+    def add_status(self, status, mark=False):
+        if self.project.current_status.name == status.name:
+            self.dot.node(status.name, status.name, style='filled', color='yellow')
+        else:
+            self.dot.node(status.name, status.name)
+
+    def add_transition(self, from_status, to_status):
+        self.dot.edge(from_status.name, to_status.name)
+
+    def render(self):
+        return self.dot.pipe()
+
+    @property
+    def mime(self):
+        return 'image/svg+xml'
 
 def add_status_post(request, project, status):
     old_status = project.current_status
