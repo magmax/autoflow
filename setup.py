@@ -81,6 +81,7 @@ setup(
     install_requires=[
         'Django                  >= 1.9.5',
         'pytz                    >= 2016.4',
+        'graphviz                == 0.4.10',
     ],
     extras_require={
         'redis':      ['redis    >= 2.10.3'],

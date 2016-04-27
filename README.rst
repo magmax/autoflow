@@ -4,6 +4,7 @@ How to start
 API
 ===
 
+- ``/service/<project>/<status>`` (GET): get the current ``status`` of ``project``. Supports ``format`` parameter with values ``svg``.
 - ``/service/<project>/<status>`` (POST): set the current ``status`` of ``project``, creating both and the transition.
 
 
